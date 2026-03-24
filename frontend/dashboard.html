@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinic Pro Dashboard</title>
+<link rel="manifest" href="/manifest.json">
+<style>
+body {background-color:#FFFFFF;font-family:Arial,sans-serif;}
+header {background-color:#1976D2;color:#FFFFFF;padding:15px;display:flex;align-items:center;}
+header img {height:40px;margin-right:10px;}
+h1 {margin:0;}
+button {background-color:#1976D2;color:#FFFFFF;border:none;border-radius:8px;padding:10px 20px;cursor:pointer;font-weight:bold;}
+button:hover {background-color:#1565C0;}
+.tooth {width:40px;height:40px;background-color:#BBDEFB;border-radius:50%;text-align:center;line-height:40px;color:#FFFFFF;cursor:pointer;margin:5px;}
+.tooth:hover {background-color:#1976D2;}
+</style>
+</head>
+<body>
+
+<header>
+  <img src="tooth-logo.svg" alt="Clinic Pro Logo">
+  <h1>Clinic Pro</h1>
+</header>
+
+<section>
+  <h2>مخطط الأسنان التفاعلي</h2>
+  <div id="dental-chart">
+    <div class="tooth" data-tooth="11">11</div>
+    <div class="tooth" data-tooth="12">12</div>
+    <div class="tooth" data-tooth="13">13</div>
+    <div class="tooth" data-tooth="14">14</div>
+  </div>
+</section>
+
+<section>
+  <h2>إضافة مريض جديد</h2>
+  <form id="addPatientForm">
+    <input type="text" id="patientName" placeholder="اسم المريض" required>
+    <input type="number" id="patientAge" placeholder="العمر" required>
+    <input type="text" id="patientPhone" placeholder="رقم الهاتف" required>
+    <button type="submit">إضافة المريض</button>
+  </form>
+</section>
+
+<script src="js/main.js"></script>
+<script src="js/api.js"></script>
+</body>
+</html>
