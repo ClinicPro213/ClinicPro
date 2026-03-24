@@ -14,7 +14,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/users', userRoutes);
 
 // الاتصال بقاعدة البيانات
-mongoose.connect('mongodb://localhost:27017/clinicpro', {
+mongoose.connect('mongodb+srv://ClinicPro:admin8899@cluster0.ufglcnq.mongodb.net/?appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
