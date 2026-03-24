@@ -1,28 +1,39 @@
+// backend/server.js
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-
-const userRoutes = require('../routes/users');
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 
-// إعدادات
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Middleware
+app.use(cors());
+app.use(express.json());
 
-// ربط Routes
-app.use('/api/users', userRoutes);
+// Routes
+const usersRouter = require('./routes/users');       // المسار النسبي الصحيح
+const patientsRouter = require('./routes/patients'); // المسار النسبي الصحيح
 
-// الاتصال بقاعدة البيانات
-mongoose.connect('mongodb+srv://ClinicPro:admin8899@cluster0.ufglcnq.mongodb.net/?appName=Cluster0', {
+app.use('/api/users', usersRouter);
+app.use('/api/patients', patientsRouter);
+
+// Connect to MongoDB
+const mongoUri = process.env.MONGO_URI; mongodb+srv://ClinicPro:admin8899@cluster0.ufglcnq.mongodb.net/?appName=Cluster0 
+// يجب وضع رابط MongoDB في environment variable
+if (!mongoUri) {
+  console.error('MongoDB URI is not defined in environment variables!');
+  process.exit(1);
+}
+
+mongoose.connect(mongoUri, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
 })
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error(err));
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.error('MongoDB connection error:', err));
 
-// بدء السيرفر
+// Start server
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
-  console.log(`Clinic Pro API running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
