@@ -18,8 +18,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/patients', patientsRouter);
 
 // Connect to MongoDB
-const mongoUri = process.env.MONGO_URI; mongodb+srv://ClinicPro:admin8899@cluster0.ufglcnq.mongodb.net/?appName=Cluster0 
-// يجب وضع رابط MongoDB في environment variable
+const mongoUri = process.env.MONGO_URI;
 if (!mongoUri) {
   console.error('MongoDB URI is not defined in environment variables!');
   process.exit(1);
