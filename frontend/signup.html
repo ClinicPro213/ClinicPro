@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>إنشاء حساب</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <h2>إنشاء حساب</h2>
+  <input type="text" id="fullName" placeholder="الاسم الكامل">
+  <input type="text" id="phone" placeholder="رقم الهاتف">
+  <input type="number" id="age" placeholder="العمر">
+  <input type="text" id="username" placeholder="اسم المستخدم">
+  <input type="password" id="password" placeholder="كلمة المرور">
+  <input type="text" id="clinicName" placeholder="اسم العيادة">
+  <input type="text" id="clinicAddress" placeholder="عنوان العيادة">
+  <button onclick="signup()">إنشاء الحساب</button>
+  <div class="message" id="msg"></div>
+</div>
+
+<script>
+async function signup() {
+  const data = {
+    fullName: document.getElementById('fullName').value,
+    phone: document.getElementById('phone').value,
+    age: Number(document.getElementById('age').value),
+    username: document.getElementById('username').value,
+    password: document.getElementById('password').value,
+    clinicName: document.getElementById('clinicName').value,
+    clinicAddress: document.getElementById('clinicAddress').value
+  };
+
+  const res = await fetch('http://localhost:8000/api/users/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  const result = await res.json();
+  document.getElementById('msg').innerText = result.message || result.error;
+}
+</script>
+</body>
+</html>
