@@ -1,19 +1,141 @@
-<!-- frontend/index.html -->
 <!DOCTYPE html>
-<html lang="ar">
+<html dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clinic Pro - Login</title>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+    <meta charset="UTF-8">
+    <title>Dentify - منصة عيادات الأسنان</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tahoma', Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo h1 { color: #fff; font-size: 42px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .logo p { color: #e0e0e0; font-size: 16px; }
+        .container { max-width: 500px; width: 100%; }
+        .card { background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        h2 { color: #333; margin-bottom: 20px; text-align: center; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; }
+        button { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; margin: 5px 0; transition: transform 0.2s; }
+        button:hover { transform: scale(1.02); }
+        .btn-secondary { background: #6c757d; }
+        .switch-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .switch-buttons button { background: #28a745; }
+        .hidden { display: none; }
+        .error { color: red; font-size: 12px; margin-top: 5px; }
+    </style>
 </head>
 <body>
-<h2>تسجيل الدخول عبر Google</h2>
-<div id="g_id_onload"
-     data-client_id="GOOGLE_CLIENT_ID"
-     data-login_uri="http://localhost:5000/api/auth/register"
-     data-auto_prompt="false">
-</div>
-<div class="g_id_signin" data-type="standard"></div>
+    <div class="container">
+        <div class="logo">
+            <h1>🦷 Dentify</h1>
+            <p>منصة الأطباء والأسنان الذكية</p>
+        </div>
+
+        <!-- نموذج تسجيل الدخول -->
+        <div id="loginCard" class="card">
+            <h2>🔐 تسجيل الدخول</h2>
+            <input type="text" id="loginPhone" placeholder="رقم الهاتف">
+            <input type="password" id="loginPassword" placeholder="كلمة السر">
+            <button onclick="login()">دخول</button>
+            <div class="switch-buttons">
+                <button onclick="showPatientRegister()">📝 مريض جديد</button>
+                <button onclick="showDoctorRegister()">👨‍⚕️ طبيب جديد</button>
+            </div>
+        </div>
+
+        <!-- تسجيل مريض -->
+        <div id="patientCard" class="card hidden">
+            <h2>📝 تسجيل مريض</h2>
+            <input type="text" id="pName" placeholder="الاسم الكامل">
+            <input type="number" id="pAge" placeholder="العمر">
+            <select id="pGender"><option value="male">ذكر</option><option value="female">أنثى</option></select>
+            <input type="text" id="pPhone" placeholder="رقم الهاتف">
+            <input type="password" id="pPassword" placeholder="كلمة السر">
+            <button onclick="registerPatient()">تسجيل</button>
+            <button class="btn-secondary" onclick="showLogin()">↩️ رجوع</button>
+        </div>
+
+        <!-- تسجيل طبيب -->
+        <div id="doctorCard" class="card hidden">
+            <h2>👨‍⚕️ تسجيل طبيب</h2>
+            <input type="text" id="dName" placeholder="الاسم الكامل">
+            <input type="number" id="dAge" placeholder="العمر">
+            <select id="dGender"><option value="male">ذكر</option><option value="female">أنثى</option></select>
+            <input type="text" id="dPhone" placeholder="رقم الهاتف">
+            <input type="password" id="dPassword" placeholder="كلمة السر">
+            <input type="text" id="dLocation" placeholder="مكان المعالجة">
+            <input type="text" id="dHours" placeholder="مواعيد الدوام (مثال: السبت-الأربعاء 4-8 مساء)">
+            <select id="dPreferred"><option value="both">الكل</option><option value="male">ذكور فقط</option><option value="female">إناث فقط</option></select>
+            <label><input type="checkbox" id="dShowPhone"> عرض رقم الهاتف للمرضى</label>
+            <input type="text" id="dTelegram" placeholder="معرف تيليجرام (اختياري)">
+            <input type="file" id="dProfileImage" accept="image/*">
+            <input type="file" id="dUnivCard" accept="image/*" required>
+            <textarea id="dTreatments" placeholder="المعالجات والأسعار (مثال: حشو:150, تنظيف:100, عصب:300)" rows="3"></textarea>
+            <button onclick="registerDoctor()">تسجيل وانتظار الموافقة</button>
+            <button class="btn-secondary" onclick="showLogin()">↩️ رجوع</button>
+        </div>
+    </div>
+
+    <script>
+        function showLogin() {
+            document.getElementById('loginCard').classList.remove('hidden');
+            document.getElementById('patientCard').classList.add('hidden');
+            document.getElementById('doctorCard').classList.add('hidden');
+        }
+        function showPatientRegister() {
+            document.getElementById('loginCard').classList.add('hidden');
+            document.getElementById('patientCard').classList.remove('hidden');
+            document.getElementById('doctorCard').classList.add('hidden');
+        }
+        function showDoctorRegister() {
+            document.getElementById('loginCard').classList.add('hidden');
+            document.getElementById('patientCard').classList.add('hidden');
+            document.getElementById('doctorCard').classList.remove('hidden');
+        }
+
+        async function login() {
+            let res = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ phone:loginPhone.value, password:loginPassword.value }) });
+            let data = await res.json();
+            if(data.success) location.href = data.redirect;
+            else alert('❌ ' + data.error);
+        }
+
+        async function registerPatient() {
+            let res = await fetch('/api/register-patient', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ name:pName.value, age:pAge.value, gender:pGender.value, phone:pPhone.value, password:pPassword.value }) });
+            let data = await res.json();
+            alert(data.success ? '✅ تم التسجيل بنجاح! يمكنك الدخول الآن' : '❌ ' + data.error);
+            if(data.success) showLogin();
+        }
+
+        async function registerDoctor() {
+            let treatments = {};
+            let treatmentsText = dTreatments.value;
+            if(treatmentsText) {
+                treatmentsText.split(',').forEach(t => { let s=t.split(':'); if(s.length==2) treatments[s[0].trim()] = parseFloat(s[1]); });
+            }
+            
+            let form = new FormData();
+            form.append('name', dName.value);
+            form.append('age', dAge.value);
+            form.append('gender', dGender.value);
+            form.append('phone', dPhone.value);
+            form.append('password', dPassword.value);
+            form.append('workLocation', dLocation.value);
+            form.append('workingHours', dHours.value);
+            form.append('preferredGender', dPreferred.value);
+            form.append('showPhone', dShowPhone.checked);
+            form.append('telegramUsername', dTelegram.value);
+            form.append('treatments', JSON.stringify(treatments));
+            if(dProfileImage.files[0]) form.append('profileImage', dProfileImage.files[0]);
+            if(dUnivCard.files[0]) form.append('universityCard', dUnivCard.files[0]);
+            
+            let res = await fetch('/api/register-doctor', { method:'POST', body:form });
+            let data = await res.json();
+            if(data.success) {
+                alert('✅ تم تسجيل طلبك بنجاح!\n📱 يرجى إرسال صورة البطاقة الجامعية على بوت Dentify:\n' + data.telegramBot + '\nسيتم إعلامك بعد الموافقة');
+                showLogin();
+            } else {
+                alert('❌ ' + data.error);
+            }
+        }
+    </script>
 </body>
 </html>
