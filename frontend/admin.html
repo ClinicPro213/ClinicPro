@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Dentify - لوحة الأدمن</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tahoma', Arial; background: #f0f2f5; }
+        
+        /* Navbar */
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .logo { font-size: 24px; font-weight: bold; }
+        .logo span { color: #ffd700; }
+        .logout-btn { background: #ff4757; padding: 8px 20px; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px; }
+        
+        /* Container */
+        .container { display: flex; min-height: calc(100vh - 70px); }
+        
+        /* Sidebar */
+        .sidebar { width: 250px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); padding: 20px; }
+        .sidebar button { width: 100%; padding: 12px; margin: 5px 0; background: #f8f9fa; border: none; border-radius: 10px; text-align: right; font-size: 14px; cursor: pointer; transition: all 0.3s; }
+        .sidebar button:hover { background: #667eea; color: white; }
+        .sidebar button.active { background: #667eea; color: white; }
+        
+        /* Main Content */
+        .main-content { flex: 1; padding: 30px; overflow-x: auto; }
+        
+        /* Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .stat-card h3 { font-size: 32px; color: #667eea; margin: 10px 0; }
+        .stat-card p { color: #666; }
+        
+        /* Tables */
+        .section-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .section-title { font-size: 20px; margin-bottom: 20px; color: #333; border-right: 4px solid #667eea; padding-right: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: right; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: bold; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+        .badge-pending { background: #ffc107; color: #333; }
+        .badge-approved { background: #28a745; color: white; }
+        .badge-rejected { background: #dc3545; color: white; }
+        .badge-featured { background: #ffd700; color: #333; }
+        .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 2px; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-primary { background: #667eea; color: white; }
+        img.thumbnail { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; cursor: pointer; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .modal img { max-width: 90%; max-height: 90%; }
+        .search-box { margin-bottom: 20px; padding: 10px; width: 300px; border: 1px solid #ddd; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">🦷 Dentify <span>Admin</span></div>
+        <button class="logout-btn" onclick="logout()">🚪 تسجيل خروج</button>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <button onclick="showSection('stats')" class="active" id="btn-stats">📊 إحصائيات</button>
+            <button onclick="showSection('pending')" id="btn-pending">⏳ طلبات التوثيق</button>
+            <button onclick="showSection('doctors')" id="btn-doctors">👨‍⚕️ الأطباء</button>
+            <button onclick="showSection('patients')" id="btn-patients">👤 المرضى</button>
+            <button onclick="showSection('subscriptions')" id="btn-subscriptions">💰 الاشتراكات</button>
+        </div>
+        
+        <div class="main-content">
+            <!-- Stats Section -->
+            <div id="stats-section">
+                <div class="stats-grid" id="stats-cards"></div>
+            </div>
+            
+            <!-- Pending Doctors Section -->
+            <div id="pending-section" style="display:none;">
+                <div class="section-card">
+                    <h2 class="section-title">⏳ طلبات توثيق الأطباء</h2>
+                    <div id="pending-doctors-table"></div>
+                </div>
+            </div>
+            
+            <!-- Doctors Section -->
+            <div id="doctors-section" style="display:none;">
+                <div class="section-card">
+                    <h2 class="section-title">👨‍⚕️ جميع الأطباء</h2>
+                    <input type="text" id="searchDoctors" class="search-box" placeholder="🔍 بحث بالاسم أو رقم الهاتف...">
+                    <div id="doctors-table"></div>
+                </div>
+            </div>
+            
+            <!-- Patients Section -->
+            <div id="patients-section" style="display:none;">
+                <div class="section-card">
+                    <h2 class="section-title">👤 جميع المرضى</h2>
+                    <input type="text" id="searchPatients" class="search-box" placeholder="🔍 بحث بالاسم أو رقم الهاتف...">
+                    <div id="patients-table"></div>
+                </div>
+            </div>
+            
+            <!-- Subscriptions Section -->
+            <div id="subscriptions-section" style="display:none;">
+                <div class="section-card">
+                    <h2 class="section-title">💰 إدارة الاشتراكات</h2>
+                    <div id="subscriptions-form"></div>
+                    <div id="subscriptions-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal لعرض الصور -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <img id="modalImage" src="">
+    </div>
+    
+    <script>
+        let allUsers = [];
+        
+        async function fetchAPI(url, options = {}) {
+            try {
+                const res = await fetch(url, options);
+                return await res.json();
+            } catch(e) { console.error(e); return null; }
+        }
+        
+        async function loadStats() {
+            const stats = await fetchAPI('/api/admin/stats');
+            if(stats) {
+                document.getElementById('stats-cards').innerHTML = `
+                    <div class="stat-card"><p>👥 المرضى</p><h3>${stats.totalPatients || 0}</h3></div>
+                    <div class="stat-card"><p>👨‍⚕️ الأطباء</p><h3>${stats.totalDoctors || 0}</h3></div>
+                    <div class="stat-card"><p>⏳ في الانتظار</p><h3>${stats.pendingDoctors || 0}</h3></div>
+                    <div class="stat-card"><p>📅 اشتراكات نشطة</p><h3>${stats.activeSubscriptions || 0}</h3></div>
+                    <div class="stat-card"><p>💰 الإيرادات الشهرية</p><h3>${stats.monthlyRevenue || 0} ريال</h3></div>
+                `;
+            }
+        }
+        
+        async function loadPendingDoctors() {
+            const pending = await fetchAPI('/api/admin/pending-doctors');
+            if(pending && pending.length > 0) {
+                let html = '<table><thead><tr><th>الصورة</th><th>الاسم</th><th>رقم الهاتف</th><th>البطاقة الجامعية</th><th>مكان المعالجة</th><th>الإجراءات</th></tr></thead><tbody>';
+                pending.forEach(doc => {
+                    const user = doc.userId || {};
+                    html += `<tr>
+                        <td><img src="${doc.profileImage || '/default-avatar.png'}" class="thumbnail" onclick="showImage('${doc.profileImage}')"></td>
+                        <td>${user.name || ''}</td>
+                        <td>${user.phone || ''}</td>
+                        <td><img src="${doc.universityCardImage}" class="thumbnail" onclick="showImage('${doc.universityCardImage}')"></td>
+                        <td>${doc.workLocation || ''}</td>
+                        <td>
+                            <button class="btn btn-success" onclick="verifyDoctor('${doc._id}', 'approved')">✅ قبول</button>
+                            <button class="btn btn-danger" onclick="verifyDoctor('${doc._id}', 'rejected')">❌ رفض</button>
+                        </td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                document.getElementById('pending-doctors-table').innerHTML = html;
+            } else {
+                document.getElementById('pending-doctors-table').innerHTML = '<p style="text-align:center;padding:20px;">✨ لا توجد طلبات توثيق حالياً</p>';
+            }
+        }
+        
+        async function loadAllUsers() {
+            const users = await fetchAPI('/api/admin/users');
+            if(users) {
+                allUsers = users;
+                renderDoctorsTable();
+                renderPatientsTable();
+            }
+        }
+        
+        function renderDoctorsTable() {
+            const doctors = allUsers.filter(u => u.role === 'doctor');
+            const searchTerm = document.getElementById('searchDoctors')?.value.toLowerCase() || '';
+            const filtered = doctors.filter(d => d.name?.toLowerCase().includes(searchTerm) || d.phone?.includes(searchTerm));
+            
+            let html = '<table><thead><tr><th>الصورة</th><th>الاسم</th><th>رقم الهاتف</th><th>الحالة</th><th>الاشتراك</th><th>محظور</th><th>الإجراءات</th></tr></thead><tbody>';
+            filtered.forEach(doctor => {
+                const profile = doctor.doctorProfile || {};
+                const sub = doctor.subscription;
+                html += `<tr>
+                    <td><img src="${profile.profileImage || '/default-avatar.png'}" class="thumbnail"></td>
+                    <td>${doctor.name || ''}</td>
+                    <td>${doctor.phone || ''}</td>
+                    <td><span class="badge badge-${profile.verificationStatus || 'pending'}">${profile.verificationStatus === 'approved' ? 'مقبول' : profile.verificationStatus === 'rejected' ? 'مرفوض' : 'قيد المراجعة'}</span></td>
+                    <td>${sub ? `<span class="badge ${sub.type === 'featured' ? 'badge-featured' : 'badge-approved'}">${sub.type === 'featured' ? 'مميز' : 'عادي'}</span><br><small>حتى ${new Date(sub.endDate).toLocaleDateString()}</small>` : 'لا يوجد'}</td>
+                    <td>${doctor.isBanned ? '🚫 محظور' : '✅ نشط'}</td>
+                    <td>
+                        ${profile.verificationStatus === 'approved' ? `<button class="btn btn-primary" onclick="showSubscriptionForm('${doctor._id}', '${doctor.name}')">💰 اشتراك</button>` : ''}
+                        <button class="btn btn-warning" onclick="makeFeatured('${doctor._id}')">⭐ رفع لأول القائمة</button>
+                        <button class="btn btn-danger" onclick="toggleBan('${doctor._id}', '${doctor.isBanned}')">${doctor.isBanned ? '🔓 إلغاء الحظر' : '🔒 حظر'}</button>
+                        <button class="btn btn-info" onclick="deleteUser('${doctor._id}')">🗑️ حذف</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('doctors-table').innerHTML = html || '<p>لا يوجد أطباء</p>';
+        }
+        
+        function renderPatientsTable() {
+            const patients = allUsers.filter(u => u.role === 'patient');
+            const searchTerm = document.getElementById('searchPatients')?.value.toLowerCase() || '';
+            const filtered = patients.filter(p => p.name?.toLowerCase().includes(searchTerm) || p.phone?.includes(searchTerm));
+            
+            let html = '<table><thead><tr><th>الاسم</th><th>العمر</th><th>الجنس</th><th>رقم الهاتف</th><th>تاريخ التسجيل</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody>';
+            filtered.forEach(patient => {
+                html += `<tr>
+                    <td>${patient.name || ''}</td>
+                    <td>${patient.age || '-'}</td>
+                    <td>${patient.gender === 'male' ? 'ذكر' : 'أنثى'}</td>
+                    <td>${patient.phone || ''}</td>
+                    <td>${new Date(patient.createdAt).toLocaleDateString()}</td>
+                    <td>${patient.isBanned ? '🚫 محظور' : '✅ نشط'}</td>
+                    <td>
+                        <button class="btn btn-danger" onclick="toggleBan('${patient._id}', '${patient.isBanned}')">${patient.isBanned ? '🔓 إلغاء الحظر' : '🔒 حظر'}</button>
+                        <button class="btn btn-info" onclick="deleteUser('${patient._id}')">🗑️ حذف</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('patients-table').innerHTML = html || '<p>لا يوجد مرضى</p>';
+        }
+        
+        async function verifyDoctor(id, status) {
+            const res = await fetchAPI(`/api/admin/verify-doctor/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            if(res?.success) {
+                alert(res.message);
+                loadPendingDoctors();
+                loadAllUsers();
+                loadStats();
+            }
+        }
+        
+        function showSubscriptionForm(doctorId, doctorName) {
+            const html = `
+                <div style="background:#f8f9fa;padding:20px;border-radius:10px;margin-bottom:20px;">
+                    <h3>تفعيل اشتراك للدكتور: ${doctorName}</h3>
+                    <select id="subType" style="padding:8px;margin:10px 0;width:200px;">
+                        <option value="normal">عادي - 500 ريال/شهر</option>
+                        <option value="featured">مميز - 1000 ريال/شهر</option>
+                    </select>
+                    <select id="subMonths" style="padding:8px;margin:10px 0;width:200px;">
+                        <option value="1">شهر واحد</option>
+                        <option value="3">3 أشهر (خصم 5%)</option>
+                        <option value="6">6 أشهر (خصم 10%)</option>
+                        <option value="12">12 شهر (خصم 15%)</option>
+                    </select>
+                    <button class="btn btn-success" onclick="addSubscription('${doctorId}')">💾 تفعيل الاشتراك</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('subscriptions-form').innerHTML = ''">إلغاء</button>
+                </div>
+            `;
+            document.getElementById('subscriptions-form').innerHTML = html;
+        }
+        
+        async function addSubscription(doctorId) {
+            const type = document.getElementById('subType').value;
+            let months = parseInt(document.getElementById('subMonths').value);
+            let discount = 1;
+            if(months === 3) discount = 0.95;
+            if(months === 6) discount = 0.9;
+            if(months === 12) discount = 0.85;
+            
+            const pricePerMonth = type === 'normal' ? 500 : 1000;
+            const finalPrice = pricePerMonth * months * discount;
+            
+            if(confirm(`المبلغ المطلوب: ${finalPrice} ريال\nهل تريد تأكيد الاشتراك؟`)) {
+                const res = await fetchAPI('/api/admin/add-subscription', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ doctorId, type, months })
+                });
+                if(res?.success) {
+                    alert(res.message);
+                    document.getElementById('subscriptions-form').innerHTML = '';
+                    loadAllUsers();
+                    loadStats();
+                }
+            }
+        }
+        
+        async function makeFeatured(doctorId) {
+            if(confirm('رفع الطبيب لأول القائمة يكلف 1000 ريال شهرياً. هل تريد المتابعة؟')) {
+                const res = await fetchAPI(`/api/admin/make-featured/${doctorId}`, { method: 'POST' });
+                if(res?.success) {
+                    alert(res.message);
+                    loadAllUsers();
+                }
+            }
+        }
+        
+        async function toggleBan(userId, currentStatus) {
+            const action = currentStatus === 'true' ? 'إلغاء الحظر' : 'الحظر';
+            if(confirm(`هل تريد ${action} هذا المستخدم؟`)) {
+                const res = await fetchAPI(`/api/admin/toggle-ban/${userId}`, { method: 'POST' });
+                if(res?.success) {
+                    alert(res.message);
+                    loadAllUsers();
+                    loadStats();
+                }
+            }
+        }
+        
+        async function deleteUser(userId) {
+            if(confirm('⚠️ هل أنت متأكد من حذف هذا المستخدم نهائياً؟')) {
+                const res = await fetchAPI(`/api/admin/delete-user/${userId}`, { method: 'DELETE' });
+                if(res?.success) {
+                    alert(res.message);
+                    loadAllUsers();
+                    loadStats();
+                }
+            }
+        }
+        
+        function showSection(section) {
+            document.querySelectorAll('.main-content > div').forEach(div => div.style.display = 'none');
+            document.getElementById(`${section}-section`).style.display = 'block';
+            document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${section}`).classList.add('active');
+            
+            if(section === 'stats') loadStats();
+            if(section === 'pending') loadPendingDoctors();
+            if(section === 'doctors' || section === 'patients' || section === 'subscriptions') loadAllUsers();
+        }
+        
+        function showImage(url) {
+            if(url) {
+                document.getElementById('modalImage').src = url;
+                document.getElementById('imageModal').style.display = 'flex';
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+        
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            location.href = '/';
+        }
+        
+        document.getElementById('searchDoctors')?.addEventListener('input', renderDoctorsTable);
+        document.getElementById('searchPatients')?.addEventListener('input', renderPatientsTable);
+        
+        loadStats();
+    </script>
+</body>
+</html>
