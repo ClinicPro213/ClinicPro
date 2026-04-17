@@ -1,49 +1,98 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clinic Pro Dashboard</title>
-<link rel="manifest" href="/manifest.json">
-<style>
-body {background-color:#FFFFFF;font-family:Arial,sans-serif;}
-header {background-color:#1976D2;color:#FFFFFF;padding:15px;display:flex;align-items:center;}
-header img {height:40px;margin-right:10px;}
-h1 {margin:0;}
-button {background-color:#1976D2;color:#FFFFFF;border:none;border-radius:8px;padding:10px 20px;cursor:pointer;font-weight:bold;}
-button:hover {background-color:#1565C0;}
-.tooth {width:40px;height:40px;background-color:#BBDEFB;border-radius:50%;text-align:center;line-height:40px;color:#FFFFFF;cursor:pointer;margin:5px;}
-.tooth:hover {background-color:#1976D2;}
-</style>
+    <meta charset="UTF-8">
+    <title>Dentify - الأطباء</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tahoma', Arial; background: #f5f5f5; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .header h1 { font-size: 28px; }
+        .logout-btn { background: #ff4757; padding: 10px 20px; border: none; border-radius: 10px; color: white; cursor: pointer; }
+        .doctors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px; }
+        .doctor-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .doctor-card:hover { transform: translateY(-5px); }
+        .featured { border: 3px solid #ffd700; box-shadow: 0 5px 30px rgba(255,215,0,0.3); }
+        .featured-badge { background: #ffd700; color: #333; padding: 5px 10px; font-size: 12px; font-weight: bold; display: inline-block; border-radius: 20px; margin-bottom: 10px; }
+        .doctor-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center; color: white; }
+        .doctor-header img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid white; }
+        .doctor-header h3 { margin-top: 10px; }
+        .doctor-info { padding: 20px; }
+        .info-row { margin: 10px 0; padding: 8px; background: #f8f9fa; border-radius: 8px; }
+        .treatment { background: #e8f5e9; padding: 8px; margin: 5px 0; border-radius: 8px; display: flex; justify-content: space-between; }
+        .price { color: #28a745; font-weight: bold; }
+        .free { color: #17a2b8; }
+        .empty { text-align: center; padding: 50px; color: #666; }
+    </style>
 </head>
 <body>
+    <div class="header">
+        <div>
+            <h1>🦷 Dentify</h1>
+            <p>اكتشف أفضل أطباء الأسنان</p>
+        </div>
+        <button class="logout-btn" onclick="logout()">🚪 تسجيل خروج</button>
+    </div>
 
-<header>
-  <img src="tooth-logo.svg" alt="Clinic Pro Logo">
-  <h1>Clinic Pro</h1>
-</header>
+    <div class="doctors-grid" id="doctorsList">
+        <div class="empty">جاري تحميل الأطباء...</div>
+    </div>
 
-<section>
-  <h2>مخطط الأسنان التفاعلي</h2>
-  <div id="dental-chart">
-    <div class="tooth" data-tooth="11">11</div>
-    <div class="tooth" data-tooth="12">12</div>
-    <div class="tooth" data-tooth="13">13</div>
-    <div class="tooth" data-tooth="14">14</div>
-  </div>
-</section>
-
-<section>
-  <h2>إضافة مريض جديد</h2>
-  <form id="addPatientForm">
-    <input type="text" id="patientName" placeholder="اسم المريض" required>
-    <input type="number" id="patientAge" placeholder="العمر" required>
-    <input type="text" id="patientPhone" placeholder="رقم الهاتف" required>
-    <button type="submit">إضافة المريض</button>
-  </form>
-</section>
-
-<script src="js/main.js"></script>
-<script src="js/api.js"></script>
+    <script>
+        async function loadDoctors() {
+            try {
+                let res = await fetch('/api/doctors');
+                let doctors = await res.json();
+                let html = '';
+                
+                if(doctors.length === 0) {
+                    html = '<div class="empty">😷 لا يوجد أطباء متاحون حالياً<br>ترقب قريباً!</div>';
+                } else {
+                    doctors.forEach(doc => {
+                        let user = doc.userId || {};
+                        let treatments = doc.treatments || {};
+                        let treatmentsHtml = '';
+                        for(let [name, price] of Object.entries(treatments)) {
+                            treatmentsHtml += `<div class="treatment">
+                                <span>🦷 ${name}</span>
+                                <span class="${price === 0 ? 'free' : 'price'}">${price === 0 ? 'مجاني' : price + ' ريال'}</span>
+                            </div>`;
+                        }
+                        
+                        let contactHtml = '';
+                        if(doc.showPhone && user.phone) contactHtml += `<div class="info-row">📞 ${user.phone}</div>`;
+                        if(doc.telegramUsername) contactHtml += `<div class="info-row">📱 تيليجرام: @${doc.telegramUsername}</div>`;
+                        
+                        html += `
+                            <div class="doctor-card ${doc.subscriptionType === 'featured' ? 'featured' : ''}">
+                                <div class="doctor-header">
+                                    ${doc.subscriptionType === 'featured' ? '<div class="featured-badge">⭐ مميز ⭐</div>' : ''}
+                                    <img src="${doc.profileImage || '/default-avatar.png'}" onerror="this.src='/default-avatar.png'">
+                                    <h3>${user.name || 'طبيب'}</h3>
+                                </div>
+                                <div class="doctor-info">
+                                    <div class="info-row">📍 ${doc.workLocation || 'غير محدد'}</div>
+                                    <div class="info-row">🕒 ${doc.workingHours || 'غير محدد'}</div>
+                                    ${contactHtml}
+                                    <h4 style="margin: 15px 0 10px 0;">💉 المعالجات والأسعار:</h4>
+                                    ${treatmentsHtml || '<div class="info-row">لا توجد معالجات مضافة</div>'}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('doctorsList').innerHTML = html;
+            } catch(e) {
+                document.getElementById('doctorsList').innerHTML = '<div class="empty">⚠️ حدث خطأ في تحميل البيانات</div>';
+            }
+        }
+        
+        async function logout() {
+            await fetch('/api/logout', { method:'POST' });
+            location.href = '/';
+        }
+        
+        loadDoctors();
+    </script>
 </body>
 </html>
