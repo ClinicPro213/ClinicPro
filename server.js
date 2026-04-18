@@ -163,7 +163,7 @@ app.delete('/api/admin/delete-user/:userId', async (req, res) => {
 // ========== Middleware ==========
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.static('frontend'));
 
 // ========== MongoDB Models ==========
 
@@ -202,7 +202,7 @@ const upload = multer({ storage });
 // ========== Routes ==========
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
 app.post('/api/register-patient', async (req, res) => {
